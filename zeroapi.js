@@ -1,3 +1,6 @@
+const http = require('http');
+const url = require('url');
+
 class ZeroAPI {
   constructor() {
     this.routes = [];
@@ -21,21 +24,61 @@ class ZeroAPI {
     this.routes.push({ method: 'DELETE', path, handler });
   }
 
-  // Simple route matching
-  findRoute(method, url) {
-    return this.routes.find(route => {
-      return route.method === method && route.path === url;
-    });
+  // Convert path like '/users/:id' to regex
+  pathToRegex(path) {
+    const pattern = path.replace(/:\w+/g, '([^/]+)');
+    return new RegExp(`^${pattern}$`);
+  }
+
+  // Extract parameter names from path
+  getParamNames(path) {
+    return (path.match(/:\w+/g) || []).map(name => name.slice(1));
+  }
+
+  // Parse query parameters from URL
+  parseQuery(urlString) {
+    const parsed = url.parse(urlString, true);
+    return parsed.query || {};
+  }
+
+  // Enhanced route matching with path parameters
+  findRoute(method, urlPath) {
+    for (const route of this.routes) {
+      if (route.method === method) {
+        // Check if it's a path parameter route (contains :)
+        if (route.path.includes(':')) {
+          const pattern = this.pathToRegex(route.path);
+          const match = urlPath.match(pattern);
+          
+          if (match) {
+            const paramNames = this.getParamNames(route.path);
+            const params = {};
+            
+            paramNames.forEach((name, index) => {
+              params[name] = match[index + 1];
+            });
+            
+            return { ...route, params };
+          }
+        } else {
+          // Exact match for normal routes
+          if (route.path === urlPath) {
+            return route;
+          }
+        }
+      }
+    }
+    return null;
   }
 
   // Start the server
   listen(port, callback) {
-    const server = require('http').createServer((req, res) => {
+    const server = http.createServer((req, res) => {
       // Set CORS headers
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-      
+
       // Handle preflight
       if (req.method === 'OPTIONS') {
         res.writeHead(200);
@@ -43,21 +86,27 @@ class ZeroAPI {
         return;
       }
 
-      // Find matching route
-      const route = this.findRoute(req.method, req.url);
+      // Extract path without query string for routing
+      const urlPath = req.url.split('?')[0];
       
+      // Find matching route
+      const route = this.findRoute(req.method, urlPath);
+
       if (route) {
         // Set JSON header
         res.setHeader('Content-Type', 'application/json');
-        
-        // Simple request object
+
+        // Enhanced request object with params and query!
         const request = {
           method: req.method,
           url: req.url,
-          headers: req.headers
+          path: urlPath,
+          headers: req.headers,
+          params: route.params || {},      // 🆕 Path parameters
+          query: this.parseQuery(req.url)  // 🆕 Query parameters
         };
 
-        // Simple response object
+        // Response object
         const response = {
           status: (code) => {
             res.writeHead(code);
