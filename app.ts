@@ -1,187 +1,118 @@
-import zeroapi from './index.js';
-import { readFileSync, existsSync, readdirSync } from 'fs';
-import { join } from 'path';
+import zeroapi, { NotFoundError, ValidationError, UnauthorizedError } from './index.js';
 
 const app = zeroapi();
 
-// Check website files
-app.get('/check-files', async (req, res) => {
-  const { readdirSync, existsSync } = await import('fs');
-  const { join } = await import('path');
-  
-  const websitePath = join(process.cwd(), 'website');
-  const files = readdirSync(websitePath);
-  
-  const fileDetails = files.map(file => {
-    const fullPath = join(websitePath, file);
-    return {
-      name: file,
-      path: fullPath,
-      exists: existsSync(fullPath),
-      webPath: `/${file}`
-    };
-  });
-  
-  res.json({
-    current_directory: process.cwd(),
-    website_path: websitePath,
-    files: fileDetails
-  });
-});
-
-// Debug route to check static file serving
-/*
-app.get('/debug', (req, res) => {
-  const fs = require('fs');
-  const path = require('path');
-  
-  const websitePath = path.join(process.cwd(), 'website');
-  const files = fs.readdirSync(websitePath);
-  
-  res.json({
-    current_directory: process.cwd(),
-    website_path: websitePath,
-    files_in_website: files,
-    exists: fs.existsSync(websitePath)
-  });
-});
-*/
-
-// 🆕 Serve static files from /website directory
+// Serve static files
 app.static('website');
 
-// 🆕 Global middleware - logs all requests
+// Global middleware
 app.use((req, res, next) => {
   console.log(`🌐 ${req.method} ${req.url} - ${new Date().toISOString()}`);
   next();
 });
 
-// Debug route to check static file serving
-app.get('/debug', (req, res) => {
-  const websitePath = join(process.cwd(), 'website');
-  let files: string[] = [];
-  let exists = false;
-  
-  try {
-    exists = existsSync(websitePath);
-    if (exists) {
-      files = readdirSync(websitePath);
-    }
-  } catch (error) {
-    console.error('Debug error:', error);
+// 🆕 DEMO ERROR HANDLING ROUTES
+
+// 1. 404 - Not Found Error
+app.get('/api/users/:id', (req, res) => {
+  // Simulate user not found
+  if (req.params.id === '999') {
+    throw new NotFoundError(`User ${req.params.id} not found`, {
+      userId: req.params.id,
+      suggestion: 'Check if the user ID is correct'
+    });
   }
   
   res.json({
-    current_directory: process.cwd(),
-    website_path: websitePath,
-    files_in_website: files,
-    exists: exists,
-    static_configured: true
+    id: req.params.id,
+    name: `User ${req.params.id}`,
+    email: `user${req.params.id}@example.com`
   });
 });
 
-// Direct route for root to test
-app.get('/', (req, res) => {
-  const websiteIndex = join(process.cwd(), 'website', 'index.html');
-  
-  try {
-    if (existsSync(websiteIndex)) {
-      const html = readFileSync(websiteIndex, 'utf8');
-      res.setHeader('Content-Type', 'text/html');
-      res.send(html);
-    } else {
-      res.json({ 
-        error: 'Website file not found',
-        path: websiteIndex,
-        current_dir: process.cwd(),
-        files_in_website: readdirSync(join(process.cwd(), 'website'))
-      });
-    }
-  } catch (error) {
-    res.json({
-      error: 'Failed to serve website',
-      details: error.message,
-      websiteIndex: websiteIndex,
-      exists: existsSync(websiteIndex)
+// 2. 400 - Validation Error
+app.post('/api/users', (req, res) => {
+  if (!req.body.email) {
+    throw new ValidationError('Email is required', {
+      field: 'email',
+      rule: 'required'
     });
   }
+  
+  if (!req.body.name || req.body.name.length < 2) {
+    throw new ValidationError('Name must be at least 2 characters', {
+      field: 'name',
+      rule: 'minLength',
+      min: 2
+    });
+  }
+
+  res.status(201).json({
+    id: Math.random().toString(36).substr(2, 9),
+    ...req.body,
+    createdAt: new Date().toISOString()
+  });
 });
 
-// =======================
-// 🚀 API ROUTES
-// =======================
+// 3. 401 - Unauthorized Error
+app.get('/api/admin', (req, res) => {
+  const token = req.headers.authorization;
+  if (!token) {
+    throw new UnauthorizedError('Authentication required', {
+      hint: 'Include Authorization header with valid token'
+    });
+  }
+  
+  res.json({
+    message: 'Welcome to admin area!',
+    secretData: ['user_stats', 'system_health']
+  });
+});
 
-// Basic API endpoint
+// 4. Generic error (500)
+app.get('/api/error', (req, res) => {
+  // This will be caught by the generic error handler
+  throw new Error('This is a generic error');
+});
+
+// Existing working routes
 app.get('/api/hello', (req, res) => {
   res.json({ 
-    message: 'Welcome to ZeroAPI! 🚀',
-    features: ['Static File Serving', 'Middleware', 'TypeScript'],
+    message: 'Welcome to ZeroAPI with Error Handling! 🚀',
     timestamp: new Date().toISOString()
   });
 });
 
-// Path parameters
-app.get('/api/users/:id', (req, res) => {
-  res.json({
-    user_id: req.params.id,
-    name: `User ${req.params.id}`,
-    profile_url: `https://example.com/users/${req.params.id}`
-  });
-});
-
-// Query parameters
 app.get('/api/search', (req, res) => {
   res.json({
     query: req.query.q,
-    results: [
-      `Result 1 for ${req.query.q}`,
-      `Result 2 for ${req.query.q}`,
-      `Result 3 for ${req.query.q}`
-    ],
-    total: 3
+    results: [`Result for ${req.query.q}`]
   });
 });
 
-// POST with JSON body
-app.post('/api/users', (req, res) => {
-  res.status(201).json({
-    message: 'User created!',
-    user_data: req.body,
-    id: Math.random().toString(36).substr(2, 9)
+// 🆕 Custom error handler (optional)
+app.onError((error, req, res) => {
+  console.log('🔧 Custom error handler triggered:', error.message);
+  
+  res.status(error.statusCode || 500).json({
+    error: error.message,
+    details: error.details,
+    timestamp: new Date().toISOString(),
+    path: req.url
   });
 });
 
-// Auth protected route (mock)
-const authMiddleware = (req: any, res: any, next: any) => {
-  const token = req.headers.authorization;
-  if (!token) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  req.user = { id: 123, name: 'Demo User' };
-  next();
-};
-
-app.get('/api/profile', authMiddleware, (req: any, res) => {
-  res.json({
-    message: 'Protected profile data',
-    user: req.user,
-    secret_data: 'This is protected information!'
-  });
-});
-
-// Start server
 app.listen(3000, () => {
-  console.log('🚀 ZeroAPI Milestone 3 Running!');
-  console.log('🌐 Website: http://localhost:3000');
-  console.log('🔗 API Demo: http://localhost:3000/api/hello');
-  console.log('📁 Static files served from /website');
+  console.log('🚀 ZeroAPI with Error Handling Running!');
+  console.log('📍 http://localhost:3000');
   console.log('');
-  console.log('✨ Features included:');
-  console.log('   ✅ Static file serving');
-  console.log('   ✅ Middleware system');
-  console.log('   ✅ Path parameters');
-  console.log('   ✅ Query parameters');
-  console.log('   ✅ JSON body parsing');
-  console.log('   ✅ CORS handling');
-  console.log('   ✅ TypeScript support');
+  console.log('🧪 Test Error Handling:');
+  console.log('   http GET http://localhost:3000/api/users/999          # 404');
+  console.log('   http POST http://localhost:3000/api/users             # 400 (no email)');
+  console.log('   http GET http://localhost:3000/api/admin              # 401');
+  console.log('   http GET http://localhost:3000/api/error              # 500');
+  console.log('');
+  console.log('✅ Working routes:');
+  console.log('   http GET http://localhost:3000/api/hello              # 200');
+  console.log('   http GET http://localhost:3000/api/users/123          # 200');
 });

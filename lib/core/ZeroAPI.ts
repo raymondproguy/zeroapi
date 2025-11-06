@@ -2,15 +2,25 @@ import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { Router } from './Router.js';
 import { Request } from './Request.js';
 import { Response } from './Response.js';
-import { RouteHandler, MiddlewareHandler, NextFunction } from './types.js';
+import { RouteHandler, MiddlewareHandler } from './types.js';
 import { serveStatic } from '../features/static.js';
+import { createErrorHandler } from '../features/error-handler.js'; // 🆕
 
 export class ZeroAPI {
   private router: Router;
-  private staticMiddlewares: MiddlewareHandler[] = []; // 🆕 Separate static middlewares
+  private staticMiddlewares: MiddlewareHandler[] = [];
+  private errorHandler: any; // 🆕 Error handler
 
   constructor() {
     this.router = new Router();
+    this.staticMiddlewares = [];
+    this.errorHandler = createErrorHandler(); // 🆕 Default error handler
+  }
+
+  // 🆕 Register custom error handler
+  onError(handler: (error: any, req: any, res: any) => void): this {
+    this.errorHandler = handler;
+    return this;
   }
 
   use(middleware: MiddlewareHandler): this {
@@ -19,8 +29,6 @@ export class ZeroAPI {
   }
 
   static(path: string): this {
-    console.log(`📁 Registering static serving for: ${path}`);
-    // 🆕 Add to separate static middlewares that run FIRST
     this.staticMiddlewares.push(serveStatic(path));
     return this;
   }
@@ -111,12 +119,11 @@ export class ZeroAPI {
 
     const body = await this.parseBody(req);
     const urlPath = req.url?.split('?')[0] || '/';
-    const request = new Request(req, {}, {}, body); // Empty params/query for now
+    const request = new Request(req, {}, {}, body);
     const response = new Response(res);
 
     try {
-      // 🆕 1. FIRST try static file serving
-      console.log(`🔍 Checking static files for: ${urlPath}`);
+      // 1. Try static file serving
       for (const staticMiddleware of this.staticMiddlewares) {
         let staticHandled = false;
         
@@ -125,26 +132,21 @@ export class ZeroAPI {
             if (err) {
               reject(err);
             } else {
-              // If response was sent, static middleware handled it
               staticHandled = res.headersSent;
               resolve(undefined);
             }
           });
         });
 
-        // If static middleware sent a response, stop here
         if (res.headersSent) {
-          console.log(`✅ Static file served: ${urlPath}`);
           return;
         }
       }
 
-      // 🆕 2. If no static file found, THEN try API routes
-      console.log(`🔍 No static file found, checking API routes: ${urlPath}`);
+      // 2. Try API routes
       const route = this.router.find(req.method || 'GET', urlPath);
 
       if (route) {
-        // Update request with route params and query
         (request as any).params = route.params;
         (request as any).query = this.router.parseQuery(req.url || '');
 
@@ -163,16 +165,14 @@ export class ZeroAPI {
         const allHandlers = [...globalHandlers, ...route.handlers];
         await this.executeHandlers(allHandlers, request, response);
       } else {
-        res.writeHead(404);
-        res.end(JSON.stringify({ error: 'Route not found' }));
+        // 🆕 Use NotFoundError for 404s
+        const { NotFoundError } = await import('../features/errors.js');
+        throw new NotFoundError(`Route ${urlPath} not found`);
       }
       
     } catch (error) {
-      console.error('Error in request handling:', error);
-      if (!res.headersSent) {
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: 'Internal Server Error' }));
-      }
+      // 🆕 Use the error handler
+      this.errorHandler(error, request, response);
     }
   }
 }

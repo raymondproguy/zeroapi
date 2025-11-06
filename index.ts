@@ -5,4 +5,7 @@ export function zeroapi(): ZeroAPI {
 }
 
 export { ZeroAPI };
+// 🆕 Export error classes for users
+export * from './lib/features/errors.js';
+
 export default zeroapi;
