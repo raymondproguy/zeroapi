@@ -2,7 +2,8 @@ import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { Router } from './Router.js';
 import { Request } from './Request.js';
 import { Response } from './Response.js';
-import { RouteHandler } from './types.js';
+import { RouteHandler, MiddlewareHandler, NextFunction } from './types.js';
+import { serveStatic } from '../features/static.js';
 
 export class ZeroAPI {
   private router: Router;
@@ -11,23 +12,33 @@ export class ZeroAPI {
     this.router = new Router();
   }
 
-  get(path: string, handler: RouteHandler): this {
-    this.router.add('GET', path, handler);
+  use(middleware: MiddlewareHandler): this {
+    this.router.use(middleware);
     return this;
   }
 
-  post(path: string, handler: RouteHandler): this {
-    this.router.add('POST', path, handler);
+  static(path: string): this {
+    this.router.use(serveStatic(path));
     return this;
   }
 
-  put(path: string, handler: RouteHandler): this {
-    this.router.add('PUT', path, handler);
+  get(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
+    this.router.add('GET', path, ...handlers);
     return this;
   }
 
-  delete(path: string, handler: RouteHandler): this {
-    this.router.add('DELETE', path, handler);
+  post(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
+    this.router.add('POST', path, ...handlers);
+    return this;
+  }
+
+  put(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
+    this.router.add('PUT', path, ...handlers);
+    return this;
+  }
+
+  delete(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
+    this.router.add('DELETE', path, ...handlers);
     return this;
   }
 
@@ -68,6 +79,25 @@ export class ZeroAPI {
     return this;
   }
 
+  private async executeHandlers(
+    handlers: RouteHandler[], 
+    request: Request, 
+    response: Response
+  ): Promise<void> {
+    for (let i = 0; i < handlers.length; i++) {
+      const handler = handlers[i];
+      try {
+        await handler(request, response);
+      } catch (error) {
+        if (handler.length === 3) {
+          await handler(request, response, (err: any) => { throw err || error; });
+        } else {
+          throw error;
+        }
+      }
+    }
+  }
+
   private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     this.setupCORS(res);
 
@@ -85,11 +115,27 @@ export class ZeroAPI {
       const response = new Response(res);
 
       try {
-        await route.handler(request, response);
+        const globalMiddlewares = this.router.getGlobalMiddlewares();
+        const globalHandlers: RouteHandler[] = globalMiddlewares.map(middleware => {
+          return (req: any, res: any, next?: any) => {
+            return new Promise((resolve, reject) => {
+              middleware(req, res, (error?: any) => {
+                if (error) reject(error);
+                else resolve();
+              });
+            });
+          };
+        });
+
+        const allHandlers = [...globalHandlers, ...route.handlers];
+        await this.executeHandlers(allHandlers, request, response);
+        
       } catch (error) {
-        console.error('Error:', error);
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: 'Internal Server Error' }));
+        console.error('Error in request handling:', error);
+        if (!res.headersSent) {
+          res.writeHead(500);
+          res.end(JSON.stringify({ error: 'Internal Server Error' }));
+        }
       }
     } else {
       res.writeHead(404);

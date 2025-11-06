@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeroAPI - Build APIs Fast</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .tagline {
+            font-size: 1.5rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        .feature-card {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .feature-card h3 {
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+        .demo-section {
+            background: rgba(255,255,255,0.1);
+            padding: 2rem;
+            border-radius: 1rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin: 1rem;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        #result {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 0.5rem;
+            font-family: monospace;
+        }
+        .code-block {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 ZeroAPI</h1>
+            <p class="tagline">Build production-ready APIs in minutes, not days</p>
+        </header>
+
+        <section class="demo-section">
+            <h2>Live Demo</h2>
+            <p>Test the API endpoints below:</p>
+            
+            <button onclick="testEndpoint('/api/hello')">Test /api/hello</button>
+            <button onclick="testEndpoint('/api/users/123')">Test /api/users/123</button>
+            <button onclick="testEndpoint('/api/search?q=zerorapi')">Test Search</button>
+            
+            <div id="result"></div>
+        </section>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>🎯 Zero Configuration</h3>
+                <p>Get started with one line. No complex setup needed.</p>
+                <div class="code-block">const app = zeroapi();</div>
+            </div>
+            
+            <div class="feature-card">
+                <h3>⚡ Built-in Features</h3>
+                <p>JSON parsing, CORS, validation, and static file serving included.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔒 TypeScript First</h3>
+                <p>Full type safety with zero additional configuration.</p>
+            </div>
+        </div>
+
+        <section class="demo-section">
+            <h2>Quick Start</h2>
+            <div class="code-block">
+// Create your API in seconds<br>
+const app = zeroapi();<br>
+<br>
+app.get('/api/hello', (req, res) => {<br>
+&nbsp;&nbsp;res.json({ message: 'Hello World!' });<br>
+});<br>
+<br>
+app.listen(3000);<br>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        async function testEndpoint(url) {
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                document.getElementById('result').innerHTML = 
+                    `<strong>${url}:</strong> ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+
+        // Test an endpoint on load
+        testEndpoint('/api/hello');
+    </script>
+</body>
+</html>

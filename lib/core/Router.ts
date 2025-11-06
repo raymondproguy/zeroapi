@@ -1,11 +1,30 @@
 import { URL } from 'url';
-import { Route, RouteMatch } from './types.js';
+import { Route, RouteMatch, RouteHandler, MiddlewareHandler } from './types.js';
 
 export class Router {
   private routes: Route[] = [];
+  private globalMiddlewares: MiddlewareHandler[] = [];
 
-  add(method: string, path: string, handler: any): void {
-    this.routes.push({ method, path, handler });
+  use(middleware: MiddlewareHandler): void {
+    this.globalMiddlewares.push(middleware);
+  }
+
+  add(method: string, path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): void {
+    const routeHandlers: RouteHandler[] = handlers.map(handler => {
+      if (handler.length === 3) {
+        return (req: any, res: any, next?: any) => {
+          return new Promise((resolve, reject) => {
+            (handler as MiddlewareHandler)(req, res, (error?: any) => {
+              if (error) reject(error);
+              else resolve();
+            });
+          });
+        };
+      }
+      return handler as RouteHandler;
+    });
+
+    this.routes.push({ method, path, handlers: routeHandlers });
   }
 
   private pathToRegex(path: string): RegExp {
@@ -55,5 +74,9 @@ export class Router {
       }
     }
     return null;
+  }
+
+  getGlobalMiddlewares(): MiddlewareHandler[] {
+    return this.globalMiddlewares;
   }
 }

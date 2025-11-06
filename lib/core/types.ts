@@ -3,14 +3,16 @@ import { IncomingMessage, ServerResponse } from 'http';
 export interface Route {
   method: string;
   path: string;
-  handler: RouteHandler;
+  handlers: RouteHandler[];
 }
 
 export interface RouteMatch extends Route {
   params: Record<string, string>;
 }
 
-export type RouteHandler = (req: Request, res: Response) => void | Promise<void>;
+export type NextFunction = (error?: any) => void | Promise<void>;
+export type MiddlewareHandler = (req: Request, res: Response, next: NextFunction) => void | Promise<void>;
+export type RouteHandler = (req: Request, res: Response, next?: NextFunction) => void | Promise<void>;
 
 export interface Request {
   method: string;
@@ -27,4 +29,5 @@ export interface Response {
   json(data: any): void;
   send(data: any): void;
   sendStatus(code: number): void;
+  setHeader(name: string, value: string): void;
 }

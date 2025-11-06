@@ -30,4 +30,8 @@ export class Response implements ResponseInterface {
     this.res.statusCode = code;
     this.res.end();
   }
+
+  setHeader(name: string, value: string): void {
+    this.res.setHeader(name, value);
+  }
 }
