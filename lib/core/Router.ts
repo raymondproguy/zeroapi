@@ -1,27 +1,26 @@
-const { URL } = require('url');
+import { URL } from 'url';
+import { Route, RouteMatch } from './types.js';
 
-class Router {
-  constructor() {
-    this.routes = [];
-  }
+export class Router {
+  private routes: Route[] = [];
 
-  add(method, path, handler) {
+  add(method: string, path: string, handler: any): void {
     this.routes.push({ method, path, handler });
   }
 
-  pathToRegex(path) {
+  private pathToRegex(path: string): RegExp {
     const pattern = path.replace(/:\w+/g, '([^/]+)');
     return new RegExp(`^${pattern}$`);
   }
 
-  getParamNames(path) {
+  private getParamNames(path: string): string[] {
     return (path.match(/:\w+/g) || []).map(name => name.slice(1));
   }
 
-  parseQuery(urlString) {
+  parseQuery(urlString: string): Record<string, string> {
     try {
       const parsed = new URL(urlString, 'http://localhost');
-      const query = {};
+      const query: Record<string, string> = {};
       parsed.searchParams.forEach((value, key) => {
         query[key] = value;
       });
@@ -31,7 +30,7 @@ class Router {
     }
   }
 
-  find(method, urlPath) {
+  find(method: string, urlPath: string): RouteMatch | null {
     for (const route of this.routes) {
       if (route.method === method) {
         if (route.path.includes(':')) {
@@ -40,7 +39,7 @@ class Router {
           
           if (match) {
             const paramNames = this.getParamNames(route.path);
-            const params = {};
+            const params: Record<string, string> = {};
             
             paramNames.forEach((name, index) => {
               params[name] = match[index + 1];
@@ -50,7 +49,7 @@ class Router {
           }
         } else {
           if (route.path === urlPath) {
-            return route;
+            return { ...route, params: {} };
           }
         }
       }
@@ -58,5 +57,3 @@ class Router {
     return null;
   }
 }
-
-module.exports = Router;
