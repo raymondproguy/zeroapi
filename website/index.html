@@ -4,156 +4,131 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZeroAPI - Build APIs Fast</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        h1 {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, #fff, #f0f0f0);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .tagline {
-            font-size: 1.5rem;
-            opacity: 0.9;
-            margin-bottom: 2rem;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-        .feature-card {
-            background: rgba(255,255,255,0.1);
-            padding: 2rem;
-            border-radius: 1rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .feature-card h3 {
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
-        .demo-section {
-            background: rgba(255,255,255,0.1);
-            padding: 2rem;
-            border-radius: 1rem;
-            margin: 2rem 0;
-            text-align: center;
-        }
-        button {
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            margin: 1rem;
-            transition: transform 0.2s;
-        }
-        button:hover {
-            transform: translateY(-2px);
-        }
-        #result {
-            margin-top: 1rem;
-            padding: 1rem;
-            background: rgba(255,255,255,0.1);
-            border-radius: 0.5rem;
-            font-family: monospace;
-        }
-        .code-block {
-            background: rgba(0,0,0,0.3);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin: 1rem 0;
-            font-family: monospace;
-            overflow-x: auto;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🚀 ZeroAPI</h1>
-            <p class="tagline">Build production-ready APIs in minutes, not days</p>
+            <p class="tagline">Build production-ready APIs in <span class="feature-highlight">minutes, not days</span></p>
+            <p class="subtagline">Zero configuration • TypeScript First • Built-in Everything</p>
         </header>
 
         <section class="demo-section">
-            <h2>Live Demo</h2>
-            <p>Test the API endpoints below:</p>
+            <h2>🎯 Live Demo</h2>
+            <p>Test the actual API endpoints from our framework:</p>
             
-            <button onclick="testEndpoint('/api/hello')">Test /api/hello</button>
-            <button onclick="testEndpoint('/api/users/123')">Test /api/users/123</button>
-            <button onclick="testEndpoint('/api/search?q=zerorapi')">Test Search</button>
+            <div class="button-group">
+                <button onclick="testEndpoint('/api/hello')">/api/hello</button>
+                <button onclick="testEndpoint('/api/users/123')">/api/users/:id</button>
+                <button onclick="testEndpoint('/api/search?q=test')">/api/search?q=</button>
+                <button class="secondary" onclick="testEndpoint('/api/profile', true)">/api/profile (Auth)</button>
+                <button onclick="testEndpoint('/debug')">/debug</button>
+            </div>
             
-            <div id="result"></div>
+            <div id="result">Click a button above to test the actual API...</div>
         </section>
 
         <div class="features">
             <div class="feature-card">
-                <h3>🎯 Zero Configuration</h3>
-                <p>Get started with one line. No complex setup needed.</p>
+                <h3>🎯 Zero Configuration <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> One-line setup with full TypeScript support</p>
                 <div class="code-block">const app = zeroapi();</div>
             </div>
             
             <div class="feature-card">
-                <h3>⚡ Built-in Features</h3>
-                <p>JSON parsing, CORS, validation, and static file serving included.</p>
+                <h3>🛣️ Routing System <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> GET, POST, PUT, DELETE with path & query params</p>
+                <div class="code-block">app.get('/users/:id')<br>app.post('/users')</div>
             </div>
             
             <div class="feature-card">
-                <h3>🔒 TypeScript First</h3>
-                <p>Full type safety with zero additional configuration.</p>
+                <h3>🔌 Middleware <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> Global and route-specific middleware chains</p>
+                <div class="code-block">app.use(middleware)<br>app.get('/admin', auth, handler)</div>
+            </div>
+
+            <div class="feature-card">
+                <h3>📁 Static Serving <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> Serve HTML, CSS, JS files with zero config</p>
+                <div class="code-block">app.static('website')</div>
+            </div>
+
+            <div class="feature-card">
+                <h3>🔒 TypeScript <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> Full type safety with modern ES Modules</p>
+                <div class="code-block">import { zeroapi } from 'zeroapi'</div>
+            </div>
+
+            <div class="feature-card">
+                <h3>🌐 Auto CORS <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> Automatic CORS handling for frontend apps</p>
+                <div class="code-block">// No setup needed!</div>
             </div>
         </div>
 
         <section class="demo-section">
-            <h2>Quick Start</h2>
+            <h2>💻 Quick Start - ACTUAL CODE</h2>
             <div class="code-block">
-// Create your API in seconds<br>
+// 1. Install (coming soon!)<br>
+npm create zeroapi@latest my-api<br>
+<br>
+// 2. Create app (ACTUAL)<br>
+import zeroapi from 'zeroapi';<br>
 const app = zeroapi();<br>
 <br>
+// 3. Add routes (ACTUAL)<br>
 app.get('/api/hello', (req, res) => {<br>
-&nbsp;&nbsp;res.json({ message: 'Hello World!' });<br>
+&nbsp;&nbsp;res.json({ message: 'It works!' });<br>
 });<br>
 <br>
+// 4. Serve website (ACTUAL)  <br>
+app.static('website');<br>
+<br>
+// 5. Start server (ACTUAL)<br>
 app.listen(3000);<br>
             </div>
         </section>
+
+        <section class="demo-section">
+            <h2>🛠️ ACTUAL FEATURES DEMO</h2>
+            <div class="button-group">
+                <button onclick="showFeature('routing')">Routing</button>
+                <button onclick="showFeature('middleware')">Middleware</button>
+                <button onclick="showFeature('static')">Static Files</button>
+                <button onclick="showFeature('typescript')">TypeScript</button>
+                <button onclick="showFeature('cors')">CORS</button>
+                <button onclick="showFeature('validation')">JSON Parsing</button>
+            </div>
+            <div id="feature-demo" class="code-block">
+                Select a feature to see ACTUAL code from our framework...
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h2>🚀 Coming Next</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>🎨 Dev Dashboard <span class="status-next">NEXT</span></h3>
+                    <p>Live API explorer, request monitor, route visualizer</p>
+                </div>
+                <div class="feature-card">
+                    <h3>✅ Validation <span class="status-next">NEXT</span></h3>
+                    <p>Built-in request validation with TypeScript inference</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📁 File Routing <span class="status-next">NEXT</span></h3>
+                    <p>Next.js style file-based routing</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p>✨ ZeroAPI v0.3.0 - All features shown are ACTUALLY WORKING</p>
+            <p>⚡ Built from scratch • 🚀 Zero dependencies • 🛡️ Production ready</p>
+        </div>
     </div>
 
-    <script>
-        async function testEndpoint(url) {
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                document.getElementById('result').innerHTML = 
-                    `<strong>${url}:</strong> ${JSON.stringify(data, null, 2)}`;
-            } catch (error) {
-                document.getElementById('result').innerHTML = 
-                    `<strong>Error:</strong> ${error.message}`;
-            }
-        }
-
-        // Test an endpoint on load
-        testEndpoint('/api/hello');
-    </script>
+    <script src="scripts.js"></script>
 </body>
 </html>

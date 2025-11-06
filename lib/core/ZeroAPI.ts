@@ -7,6 +7,7 @@ import { serveStatic } from '../features/static.js';
 
 export class ZeroAPI {
   private router: Router;
+  private staticMiddlewares: MiddlewareHandler[] = []; // 🆕 Separate static middlewares
 
   constructor() {
     this.router = new Router();
@@ -18,7 +19,9 @@ export class ZeroAPI {
   }
 
   static(path: string): this {
-    this.router.use(serveStatic(path));
+    console.log(`📁 Registering static serving for: ${path}`);
+    // 🆕 Add to separate static middlewares that run FIRST
+    this.staticMiddlewares.push(serveStatic(path));
     return this;
   }
 
@@ -108,13 +111,43 @@ export class ZeroAPI {
 
     const body = await this.parseBody(req);
     const urlPath = req.url?.split('?')[0] || '/';
-    const route = this.router.find(req.method || 'GET', urlPath);
+    const request = new Request(req, {}, {}, body); // Empty params/query for now
+    const response = new Response(res);
 
-    if (route) {
-      const request = new Request(req, route.params, this.router.parseQuery(req.url || ''), body);
-      const response = new Response(res);
+    try {
+      // 🆕 1. FIRST try static file serving
+      console.log(`🔍 Checking static files for: ${urlPath}`);
+      for (const staticMiddleware of this.staticMiddlewares) {
+        let staticHandled = false;
+        
+        await new Promise((resolve, reject) => {
+          staticMiddleware(request, response, (err?: any) => {
+            if (err) {
+              reject(err);
+            } else {
+              // If response was sent, static middleware handled it
+              staticHandled = res.headersSent;
+              resolve(undefined);
+            }
+          });
+        });
 
-      try {
+        // If static middleware sent a response, stop here
+        if (res.headersSent) {
+          console.log(`✅ Static file served: ${urlPath}`);
+          return;
+        }
+      }
+
+      // 🆕 2. If no static file found, THEN try API routes
+      console.log(`🔍 No static file found, checking API routes: ${urlPath}`);
+      const route = this.router.find(req.method || 'GET', urlPath);
+
+      if (route) {
+        // Update request with route params and query
+        (request as any).params = route.params;
+        (request as any).query = this.router.parseQuery(req.url || '');
+
         const globalMiddlewares = this.router.getGlobalMiddlewares();
         const globalHandlers: RouteHandler[] = globalMiddlewares.map(middleware => {
           return (req: any, res: any, next?: any) => {
@@ -129,17 +162,17 @@ export class ZeroAPI {
 
         const allHandlers = [...globalHandlers, ...route.handlers];
         await this.executeHandlers(allHandlers, request, response);
-        
-      } catch (error) {
-        console.error('Error in request handling:', error);
-        if (!res.headersSent) {
-          res.writeHead(500);
-          res.end(JSON.stringify({ error: 'Internal Server Error' }));
-        }
+      } else {
+        res.writeHead(404);
+        res.end(JSON.stringify({ error: 'Route not found' }));
       }
-    } else {
-      res.writeHead(404);
-      res.end(JSON.stringify({ error: 'Route not found' }));
+      
+    } catch (error) {
+      console.error('Error in request handling:', error);
+      if (!res.headersSent) {
+        res.writeHead(500);
+        res.end(JSON.stringify({ error: 'Internal Server Error' }));
+      }
     }
   }
 }

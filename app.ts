@@ -1,6 +1,51 @@
 import zeroapi from './index.js';
+import { readFileSync, existsSync, readdirSync } from 'fs';
+import { join } from 'path';
 
 const app = zeroapi();
+
+// Check website files
+app.get('/check-files', async (req, res) => {
+  const { readdirSync, existsSync } = await import('fs');
+  const { join } = await import('path');
+  
+  const websitePath = join(process.cwd(), 'website');
+  const files = readdirSync(websitePath);
+  
+  const fileDetails = files.map(file => {
+    const fullPath = join(websitePath, file);
+    return {
+      name: file,
+      path: fullPath,
+      exists: existsSync(fullPath),
+      webPath: `/${file}`
+    };
+  });
+  
+  res.json({
+    current_directory: process.cwd(),
+    website_path: websitePath,
+    files: fileDetails
+  });
+});
+
+// Debug route to check static file serving
+/*
+app.get('/debug', (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  
+  const websitePath = path.join(process.cwd(), 'website');
+  const files = fs.readdirSync(websitePath);
+  
+  res.json({
+    current_directory: process.cwd(),
+    website_path: websitePath,
+    files_in_website: files,
+    exists: fs.existsSync(websitePath)
+  });
+});
+*/
 
 // 🆕 Serve static files from /website directory
 app.static('website');
@@ -9,6 +54,57 @@ app.static('website');
 app.use((req, res, next) => {
   console.log(`🌐 ${req.method} ${req.url} - ${new Date().toISOString()}`);
   next();
+});
+
+// Debug route to check static file serving
+app.get('/debug', (req, res) => {
+  const websitePath = join(process.cwd(), 'website');
+  let files: string[] = [];
+  let exists = false;
+  
+  try {
+    exists = existsSync(websitePath);
+    if (exists) {
+      files = readdirSync(websitePath);
+    }
+  } catch (error) {
+    console.error('Debug error:', error);
+  }
+  
+  res.json({
+    current_directory: process.cwd(),
+    website_path: websitePath,
+    files_in_website: files,
+    exists: exists,
+    static_configured: true
+  });
+});
+
+// Direct route for root to test
+app.get('/', (req, res) => {
+  const websiteIndex = join(process.cwd(), 'website', 'index.html');
+  
+  try {
+    if (existsSync(websiteIndex)) {
+      const html = readFileSync(websiteIndex, 'utf8');
+      res.setHeader('Content-Type', 'text/html');
+      res.send(html);
+    } else {
+      res.json({ 
+        error: 'Website file not found',
+        path: websiteIndex,
+        current_dir: process.cwd(),
+        files_in_website: readdirSync(join(process.cwd(), 'website'))
+      });
+    }
+  } catch (error) {
+    res.json({
+      error: 'Failed to serve website',
+      details: error.message,
+      websiteIndex: websiteIndex,
+      exists: existsSync(websiteIndex)
+    });
+  }
 });
 
 // =======================
