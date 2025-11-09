@@ -39,6 +39,12 @@ export interface SecurityHeadersOptions {
     frameguard?: 'DENY' | 'SAMEORIGIN' | 'ALLOW-FROM';
 }
 
+// === COMPRESSION FEATURE ===
+export interface CompressionOptions {
+    threshold?: number; // Minimum response size to compre>
+    level?: number;     // Compression level (1-9)
+}
+
 // === ZEROAPI INTERFACE ===
 export interface ZeroAPI {
     // Core methods (from existing ZeroAPI class)

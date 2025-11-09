@@ -6,17 +6,21 @@ import { RouteHandler, MiddlewareHandler } from './types.js';
 import { serveStatic } from '../features/static.js';
 import { createErrorHandler } from '../features/error-handler.js';
 import { SecurityHeaders } from '../features/security.js';
+import { Compression } from '../features/compression.js';
 
 export class ZeroAPI {
   private router: Router;
   private staticMiddlewares: MiddlewareHandler[] = [];
   private errorHandler: any;
   private security: SecurityHeaders;
+  private compression : Compression;
 
   constructor() {
     this.router = new Router();
     this.staticMiddlewares = [];
-    this.errorHandler = createErrorHandler();   this.security = new SecurityHeaders();
+    this.errorHandler = createErrorHandler();   
+    this.security = new SecurityHeaders();
+    this.compression = new Compression();
   }
 
   // 🆕 Register custom error handler
@@ -34,6 +38,12 @@ export class ZeroAPI {
 useSecurityHeaders(options?: SecurityHeadersOptions): this {
   this.security = new SecurityHeaders(options);
   this.security.enable();
+  return this;
+}
+ // === COMPRESSION FEATURE ===
+useCompression(options?: CompressionOptions): this {
+  this.compression = new Compression(options);
+  this.compression.enable();
   return this;
 }
 
@@ -121,6 +131,7 @@ useSecurityHeaders(options?: SecurityHeadersOptions): this {
   private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     this.setupCORS(res);
     this.security.apply(res);
+    this.compression.apply(req, res);
 
     if (req.method === 'OPTIONS') {
       res.writeHead(200).end();
@@ -175,13 +186,13 @@ useSecurityHeaders(options?: SecurityHeadersOptions): this {
         const allHandlers = [...globalHandlers, ...route.handlers];
         await this.executeHandlers(allHandlers, request, response);
       } else {
-        // 🆕 Use NotFoundError for 404s
+        // Use NotFoundError for 404s
         const { NotFoundError } = await import('../features/errors.js');
         throw new NotFoundError(`Route ${urlPath} not found`);
       }
       
     } catch (error) {
-      // 🆕 Use the error handler
+      // Use the error handler
       this.errorHandler(error, request, response);
     }
   }
