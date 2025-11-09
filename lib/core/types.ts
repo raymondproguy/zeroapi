@@ -54,6 +54,13 @@ export interface RateLimitOptions {
     skip?: (req: Request) => boolean; // Function to skip rate limiting
 }
 
+// === HOT RELOAD FEATURE ===
+export interface HotReloadOptions {
+    watchDirs?: string[];    // Directories to watch for changes
+    extensions?: string[];   // File extensions to watch
+    delay?: number;         // Delay before reloading (ms)
+}
+
 // === ZEROAPI INTERFACE ===
 export interface ZeroAPI {
     // Core methods (from existing ZeroAPI class)

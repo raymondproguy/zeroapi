@@ -2,12 +2,13 @@ import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { Router } from './Router.js';
 import { Request } from './Request.js';
 import { Response } from './Response.js';
-import { RouteHandler, MiddlewareHandler } from './types.js';
+import { RouteHandler, MiddlewareHandler, HotReloadOptions } from './types.js';
 import { serveStatic } from '../features/static.js';
 import { createErrorHandler } from '../features/error-handler.js';
 import { SecurityHeaders } from '../features/security.js';
 import { Compression } from '../features/compression.js';
 import { RateLimit } from '../features/rate-limit.js';
+import { HotReload, DevUtils } from '../features/hot-reload.js'; 
 
 export class ZeroAPI {
   private router: Router;
@@ -16,6 +17,8 @@ export class ZeroAPI {
   private security: SecurityHeaders;
   private compression : Compression;
   private rateLimit: RateLimit;
+  private hotReload: HotReload;
+  private server: any = null;
 
   constructor() {
     this.router = new Router();
@@ -24,6 +27,7 @@ export class ZeroAPI {
     this.security = new SecurityHeaders();
     this.compression = new Compression();
     this.rateLimit = new RateLimit({ windowMs: 900000, max: 100 }); // Default: 100 req/15min 
+    this.hotReload = new HotReload();
   }
 
   // 🆕 Register custom error handler
@@ -54,6 +58,15 @@ useCompression(options?: CompressionOptions): this {
 useRateLimit(options: RateLimitOptions): this {
   this.rateLimit = new RateLimit(options);
   this.rateLimit.enable();
+  return this;
+}
+
+// === HOT RELOAD FEATURE ===
+enableHotReload(options?: HotReloadOptions): this {
+  this.hotReload = new HotReload(options);
+  this.hotReload.onRestart(() => {
+    this.restartServer();
+  }).enable();
   return this;
 }
 
@@ -111,13 +124,21 @@ useRateLimit(options: RateLimitOptions): this {
   }
 
   listen(port: number, callback?: () => void): this {
-    const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-      await this.handleRequest(req, res);
-    });
+  this.server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    await this.handleRequest(req, res);
+  });
 
-    server.listen(port, callback);
-    return this;
-  }
+  this.server.listen(port, () => {
+    if (callback) callback();
+
+    // Print development info
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔧 Development mode detected');
+      console.log('💡 Use .enableHotReload() for automatic restart on file changes');
+    }
+  });
+  return this;
+}
 
   private async executeHandlers(
     handlers: RouteHandler[], 
@@ -137,6 +158,38 @@ useRateLimit(options: RateLimitOptions): this {
       }
     }
   }
+
+
+// === HOT RELOAD FEATURE ===
+private restartServer(): void {
+  if (this.server) {
+    console.log('♻️  Closing existing server...');
+    this.server.close(() => {
+      console.log('✅ Server closed');
+      this.startServer();
+    });
+  } else {
+    this.startServer();
+  }
+}
+
+private startServer(): void {
+  this.server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    await this.handleRequest(req, res);
+  });
+
+  // Get the port from the original server or use default
+  const port = this.server.address()?.port || 3000;
+  this.server.listen(port, () => {
+    console.log(`🚀 ZeroAPI server restarted on http://localhost:${port}`);
+
+    // Print development info
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔥 Hot reload is active - files are being watched');
+      console.log('💡 Make changes to your files and see the server restart automatically!\n');
+    }
+  });
+}
 
   private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     this.setupCORS(res);
