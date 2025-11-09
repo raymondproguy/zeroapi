@@ -6,7 +6,7 @@ const app = zeroapi();
 app.static('website');
 
 // Global middleware
-app.use((req, res, next) => {
+app.use((req:any, res:any, next) => {
   console.log(`🌐 ${req.method} ${req.url} - ${new Date().toISOString()}`);
   next();
 });
@@ -14,7 +14,7 @@ app.use((req, res, next) => {
 // 🆕 DEMO ERROR HANDLING ROUTES
 
 // 1. 404 - Not Found Error
-app.get('/api/users/:id', (req, res) => {
+app.get('/api/users/:id', (req:any, res:any) => {
   // Simulate user not found
   if (req.params.id === '999') {
     throw new NotFoundError(`User ${req.params.id} not found`, {
@@ -31,7 +31,7 @@ app.get('/api/users/:id', (req, res) => {
 });
 
 // 2. 400 - Validation Error
-app.post('/api/users', (req, res) => {
+app.post('/api/users', (req:any, res:any) => {
   if (!req.body.email) {
     throw new ValidationError('Email is required', {
       field: 'email',
@@ -55,7 +55,7 @@ app.post('/api/users', (req, res) => {
 });
 
 // 3. 401 - Unauthorized Error
-app.get('/api/admin', (req, res) => {
+app.get('/api/admin', (req:any, res:any) => {
   const token = req.headers.authorization;
   if (!token) {
     throw new UnauthorizedError('Authentication required', {
@@ -70,20 +70,20 @@ app.get('/api/admin', (req, res) => {
 });
 
 // 4. Generic error (500)
-app.get('/api/error', (req, res) => {
+app.get('/api/error', (req:any, res:any) => {
   // This will be caught by the generic error handler
   throw new Error('This is a generic error');
 });
 
 // Existing working routes
-app.get('/api/hello', (req, res) => {
+app.get('/api/hello', (req:any, res:any) => {
   res.json({ 
     message: 'Welcome to ZeroAPI with Error Handling! 🚀',
     timestamp: new Date().toISOString()
   });
 });
 
-app.get('/api/search', (req, res) => {
+app.get('/api/search', (req:any, res:any) => {
   res.json({
     query: req.query.q,
     results: [`Result for ${req.query.q}`]
@@ -91,7 +91,7 @@ app.get('/api/search', (req, res) => {
 });
 
 // 🆕 Custom error handler (optional)
-app.onError((error, req, res) => {
+app.onError((error, req:any, res:any) => {
   console.log('🔧 Custom error handler triggered:', error.message);
   
   res.status(error.statusCode || 500).json({

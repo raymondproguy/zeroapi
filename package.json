@@ -1,15 +1,44 @@
 {
   "name": "zeroapi",
-  "type": "module",
   "version": "1.0.0",
+  "description": "Build production-ready APIs in minutes, not days. Zero configuration required.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "dev": "tsx watch app.ts",
-    "build": "tsc",
-    "start": "node dist/app.js"
+    "build": "tsup lib/**/*.ts index.ts --dts --format esm --out-dir dist",
+    "prepublishOnly": "npm run build",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "framework",
+    "api",
+    "zero-config",
+    "typescript",
+    "http",
+    "server"
+  ],
+  "author": "Nicholas Raymond",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raymondpro/zeroapi"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "tsx": "^4.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.0.0"
-  }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }

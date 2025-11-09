@@ -31,3 +31,30 @@ export interface Response {
   sendStatus(code: number): void;
   setHeader(name: string, value: string): void;
 }
+
+// === SECURITY HEADERS FEATURE ===
+export interface SecurityHeadersOptions {
+    enableCSP?: boolean;
+    enableHSTS?: boolean;
+    frameguard?: 'DENY' | 'SAMEORIGIN' | 'ALLOW-FROM';
+}
+
+// === ZEROAPI INTERFACE ===
+export interface ZeroAPI {
+    // Core methods (from existing ZeroAPI class)
+    use(middleware: MiddlewareHandler): ZeroAPI;
+    static(path: string): ZeroAPI;
+    get(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): ZeroAPI;
+    post(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): ZeroAPI;
+    put(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): ZeroAPI;
+    delete(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): ZeroAPI;
+    onError(handler: (error: any, req: any, res: any) => void): ZeroAPI;
+    listen(port: number, callback?: () => void): ZeroAPI;
+    
+    useSecurityHeaders(options?: SecurityHeadersOptions): ZeroAPI;
+    useCompression(options?: CompressionOptions): ZeroAPI;
+    useRateLimit(options: RateLimitOptions): ZeroAPI;
+    testing(): any;
+    enableHotReload(options?: HotReloadOptions): ZeroAPI;
+    swagger(options: SwaggerOptions): ZeroAPI;
+}

@@ -4,17 +4,19 @@ import { Request } from './Request.js';
 import { Response } from './Response.js';
 import { RouteHandler, MiddlewareHandler } from './types.js';
 import { serveStatic } from '../features/static.js';
-import { createErrorHandler } from '../features/error-handler.js'; // 🆕
+import { createErrorHandler } from '../features/error-handler.js';
+import { SecurityHeaders } from '../features/security.js';
 
 export class ZeroAPI {
   private router: Router;
   private staticMiddlewares: MiddlewareHandler[] = [];
-  private errorHandler: any; // 🆕 Error handler
+  private errorHandler: any;
+  private security: SecurityHeaders;
 
   constructor() {
     this.router = new Router();
     this.staticMiddlewares = [];
-    this.errorHandler = createErrorHandler(); // 🆕 Default error handler
+    this.errorHandler = createErrorHandler();   this.security = new SecurityHeaders();
   }
 
   // 🆕 Register custom error handler
@@ -27,6 +29,13 @@ export class ZeroAPI {
     this.router.use(middleware);
     return this;
   }
+
+  // === SECURITY HEADERS FEATURE ===
+useSecurityHeaders(options?: SecurityHeadersOptions): this {
+  this.security = new SecurityHeaders(options);
+  this.security.enable();
+  return this;
+}
 
   static(path: string): this {
     this.staticMiddlewares.push(serveStatic(path));
@@ -111,6 +120,7 @@ export class ZeroAPI {
 
   private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     this.setupCORS(res);
+    this.security.apply(res);
 
     if (req.method === 'OPTIONS') {
       res.writeHead(200).end();
