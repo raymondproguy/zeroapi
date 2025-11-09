@@ -7,6 +7,7 @@ import { serveStatic } from '../features/static.js';
 import { createErrorHandler } from '../features/error-handler.js';
 import { SecurityHeaders } from '../features/security.js';
 import { Compression } from '../features/compression.js';
+import { RateLimit } from '../features/rate-limit.js';
 
 export class ZeroAPI {
   private router: Router;
@@ -14,6 +15,7 @@ export class ZeroAPI {
   private errorHandler: any;
   private security: SecurityHeaders;
   private compression : Compression;
+  private rateLimit: RateLimit;
 
   constructor() {
     this.router = new Router();
@@ -21,6 +23,7 @@ export class ZeroAPI {
     this.errorHandler = createErrorHandler();   
     this.security = new SecurityHeaders();
     this.compression = new Compression();
+    this.rateLimit = new RateLimit({ windowMs: 900000, max: 100 }); // Default: 100 req/15min 
   }
 
   // 🆕 Register custom error handler
@@ -44,6 +47,13 @@ useSecurityHeaders(options?: SecurityHeadersOptions): this {
 useCompression(options?: CompressionOptions): this {
   this.compression = new Compression(options);
   this.compression.enable();
+  return this;
+}
+
+// === RATE LIMITING FEATURE ===
+useRateLimit(options: RateLimitOptions): this {
+  this.rateLimit = new RateLimit(options);
+  this.rateLimit.enable();
   return this;
 }
 
@@ -132,6 +142,12 @@ useCompression(options?: CompressionOptions): this {
     this.setupCORS(res);
     this.security.apply(res);
     this.compression.apply(req, res);
+    const request = new Request(req, {}, {}, {});
+    const rateLimitAllowed = await this.rateLimit.apply(request, res);
+    if (!rateLimitAllowed) {
+      return; // Rate limit exceeded, response already sent
+    }
+
 
     if (req.method === 'OPTIONS') {
       res.writeHead(200).end();

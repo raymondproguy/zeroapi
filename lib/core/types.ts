@@ -45,6 +45,15 @@ export interface CompressionOptions {
     level?: number;     // Compression level (1-9)
 }
 
+
+// === RATE LIMITING FEATURE ===
+export interface RateLimitOptions {
+    windowMs: number;           // Time window in milliseconds
+    max: number;                // Max requests per window
+    message?: string;           // Custom error message
+    skip?: (req: Request) => boolean; // Function to skip rate limiting
+}
+
 // === ZEROAPI INTERFACE ===
 export interface ZeroAPI {
     // Core methods (from existing ZeroAPI class)
