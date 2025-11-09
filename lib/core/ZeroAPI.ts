@@ -9,6 +9,7 @@ import { SecurityHeaders } from '../features/security.js';
 import { Compression } from '../features/compression.js';
 import { RateLimit } from '../features/rate-limit.js';
 import { HotReload, DevUtils } from '../features/hot-reload.js'; 
+import { SwaggerDocs } from '../features/swagger.js';
 
 export class ZeroAPI {
   private router: Router;
@@ -19,6 +20,8 @@ export class ZeroAPI {
   private rateLimit: RateLimit;
   private hotReload: HotReload;
   private server: any = null;
+  private swagger: SwaggerDocs | null;
+  private server: any = null;
 
   constructor() {
     this.router = new Router();
@@ -28,6 +31,7 @@ export class ZeroAPI {
     this.compression = new Compression();
     this.rateLimit = new RateLimit({ windowMs: 900000, max: 100 }); // Default: 100 req/15min 
     this.hotReload = new HotReload();
+    this.swagger = null;
   }
 
   // 🆕 Register custom error handler
@@ -70,30 +74,46 @@ enableHotReload(options?: HotReloadOptions): this {
   return this;
 }
 
+// === SWAGGER DOCUMENTATION FEATURE ===
+swagger(options: SwaggerOptions): this {
+  this.swagger = new SwaggerDocs(options);
+  this.swagger.enable();
+  
+  // Add Swagger UI routes
+  this.setupSwaggerRoutes();
+  return this;
+}
+
   static(path: string): this {
     this.staticMiddlewares.push(serveStatic(path));
     return this;
   }
 
-  get(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
-    this.router.add('GET', path, ...handlers);
-    return this;
-  }
+  // === SWAGGER DOCUMENTATION FEATURE ===
+// Override route methods to capture documentation
+get(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
+  this.router.add('GET', path, ...handlers);
+  this.captureRouteDoc('GET', path, handlers);
+  return this;
+}
 
-  post(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
-    this.router.add('POST', path, ...handlers);
-    return this;
-  }
+post(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
+  this.router.add('POST', path, ...handlers);
+  this.captureRouteDoc('POST', path, handlers);
+  return this;
+}
 
-  put(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
-    this.router.add('PUT', path, ...handlers);
-    return this;
-  }
+put(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
+  this.router.add('PUT', path, ...handlers);
+  this.captureRouteDoc('PUT', path, handlers);
+  return this;
+}
 
-  delete(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
-    this.router.add('DELETE', path, ...handlers);
-    return this;
-  }
+delete(path: string, ...handlers: (RouteHandler | MiddlewareHandler)[]): this {
+  this.router.add('DELETE', path, ...handlers);
+  this.captureRouteDoc('DELETE', path, handlers);
+  return this;
+}
 
   private setupCORS(res: ServerResponse): void {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -189,6 +209,47 @@ private startServer(): void {
       console.log('💡 Make changes to your files and see the server restart automatically!\n');
     }
   });
+}
+
+// === SWAGGER DOCUMENTATION FEATURE ===
+private captureRouteDoc(method: string, path: string, handlers: any[]): void {
+  if (!this.swagger || !this.swagger.isEnabled()) return;
+
+  // Look for documentation in handlers
+  for (const handler of handlers) {
+    if (handler._docs) {
+      // Handler has documentation attached via decorator
+      for (const [handlerName, docs] of handler._docs) {
+        this.swagger.documentRoute(method, path, docs);
+      }
+    }
+  }
+}
+
+private setupSwaggerRoutes(): void {
+  if (!this.swagger) return;
+
+  const basePath = this.swagger.getBasePath();
+
+  // Serve OpenAPI JSON specification
+  this.get(`${basePath}/json`, (req: any, res: any) => {
+    const spec = this.swagger!.generateSpec();
+    res.json(spec);
+  });
+
+  // Serve Swagger UI
+  this.get(`${basePath}`, (req: any, res: any) => {
+    const html = this.swagger!.generateUI();
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  });
+
+  // Serve Swagger UI assets (fallback)
+  this.get(`${basePath}/*`, (req: any, res: any) => {
+    res.redirect(`https://unpkg.com/swagger-ui-dist@3/${req.params[0]}`);
+  });
+
+  console.log(`📚 Swagger UI available at http://localhost:3000${basePath}`);
 }
 
   private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {

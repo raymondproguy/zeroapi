@@ -61,6 +61,40 @@ export interface HotReloadOptions {
     delay?: number;         // Delay before reloading (ms)
 }
 
+// === SWAGGER DOCUMENTATION FEATURE ===
+export interface SwaggerOptions {
+    title: string;
+    version: string;
+    description?: string;
+    contact?: {
+        name?: string;
+        email?: string;
+        url?: string;
+    };
+    license?: {
+        name: string;
+        url?: string;
+    };
+    servers?: Array<{ url: string; description?: string }>;
+}
+
+export interface RouteDoc {
+    summary?: string;
+    description?: string;
+    parameters?: Array<{
+        name: string;
+        in: 'query' | 'path' | 'header' | 'cookie';
+        description?: string;
+        required?: boolean;
+        schema?: any;
+    }>;
+    responses?: Record<string, {
+        description: string;
+        content?: any;
+    }>;
+    tags?: string[];
+}
+
 // === ZEROAPI INTERFACE ===
 export interface ZeroAPI {
     // Core methods (from existing ZeroAPI class)

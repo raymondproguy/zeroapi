@@ -12,5 +12,7 @@ export type { CompressionOptions } from './lib/core/types.js'
 export type { RateLimitOptions} from './lib/core/types.js'
 export { HotReload, DevUtils } from './lib/features/hot-reload.js';
 export type { HotReloadOptions } from './lib/core/types.js';
+export { SwaggerDocs, Doc, DocBuilder } from './lib/features/swagger.js';
+export type { SwaggerOptions, RouteDoc } from './lib/core/types.js';
 
 export default zeroapi;
