@@ -10,6 +10,7 @@ import { ZeroRequest, ZeroResponse, RouteHandler, Feature } from '../types/core.
 import { Database } from '../features/database/database.js';
 import { Auth } from '../features/auth/auth.js';
 import { Config } from '../features/config/config.js';
+import { Storage } from '../features/storage/storage.js';
 
 export class ZeroAPI {
   private router: Router;
@@ -62,6 +63,16 @@ export class ZeroAPI {
     this.context.config = config;
     return this;
   }
+  
+  /**
+ * Storage Feature
+ */
+  storage(options?: any): this {
+  const storage = new Storage(options || { provider: 'local' });
+  this.features.set('storage', storage);
+  this.context.storage = storage;
+  return this;
+}
 
   /**
    * Routing Methods
