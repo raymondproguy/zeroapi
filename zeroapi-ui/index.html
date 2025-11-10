@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeroAPI Visual Builder</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/sidebar.css">
+    <link rel="stylesheet" href="styles/canvas.css">
+    <link rel="stylesheet" href="styles/endpoints.css">
+    <link rel="stylesheet" href="styles/database.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <img src="assets/logo.svg" alt="ZeroAPI" class="logo-icon">
+                <span class="logo-text">ZeroAPI</span>
+            </div>
+            <nav class="main-nav">
+                <button class="nav-btn active" data-view="projects">Projects</button>
+                <button class="nav-btn" data-view="api">API Designer</button>
+                <button class="nav-btn" data-view="database">Database</button>
+                <button class="nav-btn" data-view="deployment">Deployment</button>
+                <button class="nav-btn" data-view="settings">Settings</button>
+            </nav>
+        </div>
+        <div class="header-right">
+            <button class="btn btn-secondary" id="live-preview-btn">
+                <span class="btn-icon">🔄</span>
+                Live Preview
+            </button>
+            <button class="btn btn-primary" id="deploy-btn">
+                <span class="btn-icon">🚀</span>
+                Deploy
+            </button>
+            <div class="user-menu">
+                <img src="assets/user-avatar.png" alt="User" class="user-avatar">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">📁 Project</h3>
+                <div class="file-tree">
+                    <div class="file-item" data-file="package.json">
+                        <span class="file-icon">📄</span>
+                        package.json
+                    </div>
+                    <div class="folder">
+                        <div class="folder-header">
+                            <span class="folder-icon">📁</span>
+                            src/
+                        </div>
+                        <div class="folder-content">
+                            <div class="file-item" data-file="index.ts">index.ts</div>
+                            <div class="folder">
+                                <div class="folder-header">
+                                    <span class="folder-icon">📁</span>
+                                    routes/
+                                </div>
+                                <div class="folder-content">
+                                    <div class="file-item active" data-file="auth.ts">auth.ts</div>
+                                    <div class="file-item" data-file="users.ts">users.ts</div>
+                                    <div class="file-item" data-file="tasks.ts">tasks.ts</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">🛠️ Components</h3>
+                <div class="components-list">
+                    <div class="component-category">
+                        <div class="category-header">🔐 Authentication</div>
+                        <div class="component-item" draggable="true" data-type="login">Login</div>
+                        <div class="component-item" draggable="true" data-type="register">Register</div>
+                        <div class="component-item" draggable="true" data-type="auth-check">Auth Check</div>
+                    </div>
+                    <div class="component-category">
+                        <div class="category-header">🗃️ Database</div>
+                        <div class="component-item" draggable="true" data-type="create">Create</div>
+                        <div class="component-item" draggable="true" data-type="read">Read</div>
+                        <div class="component-item" draggable="true" data-type="update">Update</div>
+                        <div class="component-item" draggable="true" data-type="delete">Delete</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Canvas -->
+        <main class="canvas" id="canvas">
+            <!-- API Designer View -->
+            <div class="view active" id="api-view">
+                <div class="view-header">
+                    <h2>🏠 API Endpoints</h2>
+                    <button class="btn btn-primary" id="add-endpoint-btn">
+                        <span class="btn-icon">➕</span>
+                        Add Endpoint
+                    </button>
+                </div>
+                <div class="endpoints-grid" id="endpoints-grid">
+                    <!-- Endpoints will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Database Designer View -->
+            <div class="view" id="database-view">
+                <div class="view-header">
+                    <h2>🗃️ Database Schema</h2>
+                    <button class="btn btn-primary" id="add-table-btn">
+                        <span class="btn-icon">➕</span>
+                        New Table
+                    </button>
+                </div>
+                <div class="database-design-area">
+                    <!-- Database tables will be here -->
+                </div>
+            </div>
+
+            <!-- Other views will be similar -->
+        </main>
+    </div>
+
+    <!-- AI Assistant Chat -->
+    <div class="ai-assistant" id="ai-assistant">
+        <div class="ai-header">
+            <h3>🤖 ZeroAPI AI Assistant</h3>
+            <button class="close-ai" id="close-ai">×</button>
+        </div>
+        <div class="ai-messages" id="ai-messages">
+            <div class="ai-message">
+                <div class="message-bubble ai-bubble">
+                    Hi! I'm your ZeroAPI AI assistant. How can I help you build your API today?
+                </div>
+            </div>
+        </div>
+        <div class="ai-input">
+            <input type="text" id="ai-input" placeholder="Ask me anything about your API...">
+            <button id="send-ai">➤</button>
+        </div>
+    </div>
+
+    <!-- Modals will be injected here -->
+
+    <!-- Scripts -->
+    <script src="scripts/main.js"></script>
+    <script src="scripts/sidebar.js"></script>
+    <script src="scripts/endpoints.js"></script>
+    <script src="scripts/database.js"></script>
+    <script src="scripts/dragdrop.js"></script>
+    <script src="scripts/ai-assistant.js"></script>
+</body>
+</html>
