@@ -12,6 +12,8 @@ import { Auth } from '../features/auth/auth.js';
 import { Config } from '../features/config/config.js';
 import { Storage } from '../features/storage/storage.js';
 import { Payments } from '../features/payments/payments.js';
+import { Deployment } from '../deployment/deployment.js';
+import { AIGenerator } from '../features/ai/ai-genarators.js'
 
 export class ZeroAPI {
   private router: Router;
