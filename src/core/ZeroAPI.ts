@@ -11,6 +11,7 @@ import { Database } from '../features/database/database.js';
 import { Auth } from '../features/auth/auth.js';
 import { Config } from '../features/config/config.js';
 import { Storage } from '../features/storage/storage.js';
+import { Payments } from '../features/payments/payments.js';
 
 export class ZeroAPI {
   private router: Router;
@@ -71,6 +72,16 @@ export class ZeroAPI {
   const storage = new Storage(options || { provider: 'local' });
   this.features.set('storage', storage);
   this.context.storage = storage;
+  return this;
+}
+
+  /**
+ * Payments Feature
+ */
+  payments(options?: any): this {
+  const payments = new Payments(options || { provider: 'stripe' });
+  this.features.set('payments', payments);
+  this.context.payments = payments;
   return this;
 }
 
