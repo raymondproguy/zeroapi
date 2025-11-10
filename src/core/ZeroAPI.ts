@@ -96,6 +96,19 @@ export class ZeroAPI {
 }
 
   /**
+ * AI Feature
+ */
+ai(options?: any): this {
+  const ai = new AIGenerator(options || { 
+    provider: 'openai',
+    apiKey: process.env.OPENAI_API_KEY 
+  });
+  this.features.set('ai', ai);
+  this.context.ai = ai;
+  return this;
+}
+
+  /**
    * Routing Methods
    */
   use(handler: any): this {
