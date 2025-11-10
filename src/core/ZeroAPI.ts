@@ -85,6 +85,16 @@ export class ZeroAPI {
   return this;
 }
 
+   /**
+ * Deployment Feature
+ */
+ deployment(options?: any): this {
+  const deployment = new Deployment(options || { provider: 'vercel' });
+  this.features.set('deployment', deployment);
+  this.context.deployment = deployment;
+  return this;
+}
+
   /**
    * Routing Methods
    */
