@@ -1,0 +1,70 @@
+.endpoints-grid {
+  display: grid;
+  gap: var(--space-md);
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+.endpoint-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: var(--space-md);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.endpoint-card:hover {
+  border-color: var(--primary-purple);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.endpoint-method {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: var(--space-sm);
+}
+
+.method-get { background: #10B981; color: white; }
+.method-post { background: #3B82F6; color: white; }
+.method-put { background: #F59E0B; color: white; }
+.method-delete { background: #EF4444; color: white; }
+.method-patch { background: #8B5CF6; color: white; }
+
+.endpoint-path {
+  font-family: 'Monaco', 'Consolas', monospace;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+  word-break: break-all;
+}
+
+.endpoint-actions {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.action-btn {
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  background: var(--bg-dark);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+}
+
+.action-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.action-btn.view { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
+.action-btn.edit { background: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
+.action-btn.delete { background: rgba(239, 68, 68, 0.1); color: #EF4444; }
