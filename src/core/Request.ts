@@ -1,27 +1,32 @@
-import { IncomingMessage } from 'http';
-import { Request as RequestInterface } from './types.js';
+/**
+ * Enhanced Request Class
+ */
 
-export class Request implements RequestInterface {
+import { IncomingMessage } from 'http';
+import { ZeroRequest, RequestContext } from '../types/core.js';
+
+export class Request implements ZeroRequest {
   method: string;
   url: string;
-  path: string;
   headers: Record<string, string | string[] | undefined>;
   params: Record<string, string>;
   query: Record<string, string>;
   body: any;
+  context: RequestContext;
 
   constructor(
     req: IncomingMessage,
-    routeParams: Record<string, string>,
-    queryParams: Record<string, string>,
-    body: any = {}
+    params: Record<string, string> = {},
+    query: Record<string, string> = {},
+    body: any = {},
+    context: RequestContext = {}
   ) {
     this.method = req.method || 'GET';
     this.url = req.url || '/';
-    this.path = this.url.split('?')[0];
     this.headers = req.headers;
-    this.params = routeParams;
-    this.query = queryParams;
+    this.params = params;
+    this.query = query;
     this.body = body;
+    this.context = context;
   }
 }

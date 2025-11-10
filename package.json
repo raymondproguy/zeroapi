@@ -1,7 +1,7 @@
 {
   "name": "zeroapi",
-  "version": "1.0.0",
-  "description": "Build production-ready APIs in minutes, not days. Zero configuration required.",
+  "version": "2.0.0-alpha.1", 
+  "description": "Professional backend framework with clean architecture",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,33 +12,17 @@
     }
   },
   "scripts": {
-    "dev": "tsx watch app.ts",
-    "build": "tsup lib/**/*.ts index.ts --dts --format esm --out-dir dist",
-    "prepublishOnly": "npm run build",
-    "test": "node test.js"
+    "dev": "tsx examples/demo.ts",
+    "build": "tsup src/**/*.ts index.ts --dts --format esm --out-dir dist",
+    "test": "node --test tests/**/*.test.js"
   },
-  "keywords": [
-    "framework",
-    "api",
-    "zero-config",
-    "typescript",
-    "http",
-    "server"
-  ],
-  "author": "Nicholas Raymond",
+  "keywords": ["backend", "framework", "api", "database", "auth"],
+  "author": "Raymond Nicholas",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/raymondpro/zeroapi"
-  },
   "devDependencies": {
     "tsup": "^8.0.0",
-    "tsx": "^4.20.6",
-    "typescript": "^5.0.0"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ]
+    "typescript": "^5.0.0",
+    "tsx": "^4.0.0",
+    "@types/node": "^20.0.0"
+  }
 }

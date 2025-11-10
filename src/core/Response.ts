@@ -1,7 +1,11 @@
-import { ServerResponse } from 'http';
-import { Response as ResponseInterface } from './types.js';
+/**
+ * Enhanced Response Class
+ */
 
-export class Response implements ResponseInterface {
+import { ServerResponse } from 'http';
+import { ZeroResponse } from '../types/core.js';
+
+export class Response implements ZeroResponse {
   private res: ServerResponse;
 
   constructor(res: ServerResponse) {
@@ -26,12 +30,19 @@ export class Response implements ResponseInterface {
     }
   }
 
-  sendStatus(code: number): void {
-    this.res.statusCode = code;
-    this.res.end();
+  // ServerResponse methods
+  setHeader(name: string, value: string | string[]): this {
+    this.res.setHeader(name, value);
+    return this;
   }
 
-  setHeader(name: string, value: string): void {
-    this.res.setHeader(name, value);
+  writeHead(statusCode: number, headers?: any): this {
+    this.res.writeHead(statusCode, headers);
+    return this;
+  }
+
+  end(data?: any): this {
+    this.res.end(data);
+    return this;
   }
 }
