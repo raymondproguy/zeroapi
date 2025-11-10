@@ -43,11 +43,15 @@ export class ZeroAPI {
    * Authentication Feature
    */
   auth(options?: any): this {
-    const auth = new Auth(options, this.context.db);
-    this.features.set('auth', auth);
-    this.context.auth = auth;
-    return this;
+  if (!this.context.db) {
+    console.warn('⚠️  Auth initialized without database - using in-memory storage');
   }
+  
+  const auth = new Auth(options || { provider: 'jwt' }, this.context.db);
+  this.features.set('auth', auth);
+  this.context.auth = auth;
+  return this;
+}
 
   /**
    * Configuration
