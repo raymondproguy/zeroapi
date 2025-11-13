@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeroAPI - Build APIs Fast</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 ZeroAPI</h1>
+            <p class="tagline">Build production-ready APIs in <span class="feature-highlight">minutes, not days</span></p>
+            <p class="subtagline">Zero configuration • TypeScript First • Built-in Everything</p>
+        </header>
+
+        <section class="demo-section">
+            <h2>🎯 Live Demo</h2>
+            <p>Test the actual API endpoints from our framework:</p>
+            
+            <div class="button-group">
+                <button onclick="testEndpoint('/api/hello')">/api/hello</button>
+                <button onclick="testEndpoint('/api/users/123')">/api/users/:id</button>
+                <button onclick="testEndpoint('/api/search?q=test')">/api/search?q=</button>
+                <button class="secondary" onclick="testEndpoint('/api/profile', true)">/api/profile (Auth)</button>
+                <button onclick="testEndpoint('/debug')">/debug</button>
+            </div>
+            
+            <div id="result">Click a button above to test the actual API...</div>
+        </section>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>🎯 Zero Configuration <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> One-line setup with full TypeScript support</p>
+                <div class="code-block">const app = zeroapi();</div>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🛣️ Routing System <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> GET, POST, PUT, DELETE with path & query params</p>
+                <div class="code-block">app.get('/users/:id')<br>app.post('/users')</div>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔌 Middleware <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> Global and route-specific middleware chains</p>
+                <div class="code-block">app.use(middleware)<br>app.get('/admin', auth, handler)</div>
+            </div>
+
+            <div class="feature-card">
+                <h3>📁 Static Serving <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> Serve HTML, CSS, JS files with zero config</p>
+                <div class="code-block">app.static('website')</div>
+            </div>
+
+            <div class="feature-card">
+                <h3>🔒 TypeScript <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> Full type safety with modern ES Modules</p>
+                <div class="code-block">import { zeroapi } from 'zeroapi'</div>
+            </div>
+
+            <div class="feature-card">
+                <h3>🌐 Auto CORS <span class="status-working">✓ WORKING</span></h3>
+                <p><strong>Actual:</strong> Automatic CORS handling for frontend apps</p>
+                <div class="code-block">// No setup needed!</div>
+            </div>
+        </div>
+
+        <section class="demo-section">
+            <h2>💻 Quick Start - ACTUAL CODE</h2>
+            <div class="code-block">
+// 1. Install (coming soon!)<br>
+npm create zeroapi@latest my-api<br>
+<br>
+// 2. Create app (ACTUAL)<br>
+import zeroapi from 'zeroapi';<br>
+const app = zeroapi();<br>
+<br>
+// 3. Add routes (ACTUAL)<br>
+app.get('/api/hello', (req, res) => {<br>
+&nbsp;&nbsp;res.json({ message: 'It works!' });<br>
+});<br>
+<br>
+// 4. Serve website (ACTUAL)  <br>
+app.static('website');<br>
+<br>
+// 5. Start server (ACTUAL)<br>
+app.listen(3000);<br>
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h2>🛠️ ACTUAL FEATURES DEMO</h2>
+            <div class="button-group">
+                <button onclick="showFeature('routing')">Routing</button>
+                <button onclick="showFeature('middleware')">Middleware</button>
+                <button onclick="showFeature('static')">Static Files</button>
+                <button onclick="showFeature('typescript')">TypeScript</button>
+                <button onclick="showFeature('cors')">CORS</button>
+                <button onclick="showFeature('validation')">JSON Parsing</button>
+            </div>
+            <div id="feature-demo" class="code-block">
+                Select a feature to see ACTUAL code from our framework...
+            </div>
+        </section>
+
+        <section class="demo-section">
+            <h2>🚀 Coming Next</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>🎨 Dev Dashboard <span class="status-next">NEXT</span></h3>
+                    <p>Live API explorer, request monitor, route visualizer</p>
+                </div>
+                <div class="feature-card">
+                    <h3>✅ Validation <span class="status-next">NEXT</span></h3>
+                    <p>Built-in request validation with TypeScript inference</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📁 File Routing <span class="status-next">NEXT</span></h3>
+                    <p>Next.js style file-based routing</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="footer">
+            <p>✨ ZeroAPI v0.3.0 - All features shown are ACTUALLY WORKING</p>
+            <p>⚡ Built from scratch • 🚀 Zero dependencies • 🛡️ Production ready</p>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
