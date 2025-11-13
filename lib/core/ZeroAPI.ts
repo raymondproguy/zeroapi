@@ -18,6 +18,8 @@ import { Compression } from '../features/compression.js';
 import { RateLimit } from '../features/rate-limit.js';
 import { HotReload } from '../features/hot-reload.js';
 import { SwaggerDocs } from '../features/swagger.js';
+import { HealthCheck } from '../features/health-check.js';
+import { RequestId } from '../features/request-id.js';
 
 export class ZeroAPI {
   private router: Router;
@@ -28,6 +30,8 @@ export class ZeroAPI {
   private rateLimit: RateLimit;
   private hotReload: HotReload;
   private swaggerDocs: SwaggerDocs | null = null;
+  private healthCheck: HealthCheck;
+  private requestId: RequestId;
   private server: any = null;
 
   constructor() {
@@ -39,6 +43,8 @@ export class ZeroAPI {
     this.rateLimit = new RateLimit({ windowMs: 900000, max: 100 });
     this.hotReload = new HotReload();
     this.swaggerDocs = null;
+    this.healthCheck = new HealthCheck();
+    this.requestId = new RequestId();
   }
 
   // 🆕 Register custom error handler
@@ -82,6 +88,18 @@ export class ZeroAPI {
     this.swaggerDocs = new SwaggerDocs(options);
     this.swaggerDocs.enable();
     this.setupSwaggerRoutes();
+    return this;
+  }
+
+  // === HEALTH CHECK FEATURE ===
+  enableHealthCheck(): this {
+    this.healthCheck.enable();
+    return this;
+  }
+
+  // === REQUEST ID FEATURE ===
+  enableRequestId(): this {
+    this.requestId.enable();
     return this;
   }
 
@@ -257,6 +275,17 @@ export class ZeroAPI {
 
   private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
     this.setupCORS(res);
+    
+    // === REQUEST ID FEATURE === (Must be first!)
+    await new Promise((resolve) => {
+      this.requestId.middleware()(req, res, resolve);
+    });
+    
+    // === HEALTH CHECK FEATURE === (Auto-responds to /health)
+    await new Promise((resolve) => {
+      this.healthCheck.middleware()(req, res, resolve);
+    });
+
     this.security.apply(res);
     this.compression.apply(req, res);
 
